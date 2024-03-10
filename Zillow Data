@@ -1,0 +1,383 @@
+---
+title: "Zillow Dataset Set Up"
+output: html_document
+date: "2024-01-12"
+---
+
+
+Clean real estate data
+
+```{r}
+library(readr)
+zillow_data <- read_csv("County_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month (2).csv")
+
+View(zillow_data)
+
+
+
+
+home_toptier_data <- read_excel("County_zhvi_uc_sfrcondo_tier_0.67_1.0_sm_sa_month (2).xlsx")
+```
+
+
+
+```{r}
+#install.packages("tidyr")
+#install.packages("tidyverse")
+#install.packages("magrittr")
+
+library(magrittr)
+library(tidyr)
+zillow_data <- zillow_data %>% 
+  pivot_longer(cols = `2000-01-31`:`2023-11-30`, names_to = "Year", values_to = "home_value")
+
+home_toptier_data <- home_toptier_data %>% 
+  pivot_longer(cols = `2000-01-31`:`2024-01-31`, names_to = "Year", values_to = "home_value")
+
+# Assuming your dataset is named counties_and_fips
+# Assuming the FIPS code variable is named "fips_code"
+
+# Load the stringr package
+library(stringr)
+
+# Convert the FIPS code to character
+zillow_data$MunicipalCodeFIPS <- as.character(zillow_data$MunicipalCodeFIPS)
+
+home_toptier_data$MunicipalCodeFIPS <- as.character(home_toptier_data$MunicipalCodeFIPS)
+
+
+# Add leading zeros based on the number of digits
+zillow_data$MunicipalCodeFIPS <- str_pad(zillow_data$MunicipalCodeFIPS, width = 3, side = "left", pad = "0")
+
+
+home_toptier_data$MunicipalCodeFIPS <- str_pad(home_toptier_data$MunicipalCodeFIPS, width = 3, side = "left", pad = "0")
+
+
+
+# Convert the FIPS code to character
+zillow_data$StateCodeFIPS <- as.character(zillow_data$StateCodeFIPS)
+
+home_toptier_data$StateCodeFIPS <- as.character(home_toptier_data$StateCodeFIPS)
+
+
+# Add leading zeros based on the number of digits
+zillow_data$StateCodeFIPS <- str_pad(zillow_data$StateCodeFIPS, width = 2, side = "left", pad = "0")
+
+home_toptier_data$StateCodeFIPS <- str_pad(home_toptier_data$StateCodeFIPS, width = 2, side = "left", pad = "0")
+
+# Concatenate state and municipal FIPS codes
+zillow_data$FIPS <- paste0(zillow_data$StateCodeFIPS, zillow_data$MunicipalCodeFIPS)
+
+home_toptier_data$FIPS <- paste0(home_toptier_data$StateCodeFIPS, home_toptier_data$MunicipalCodeFIPS)
+
+
+
+
+zillow_data$FIPS <- as.numeric(zillow_data$FIPS)
+
+home_toptier_data$FIPS <- as.numeric(home_toptier_data$FIPS)
+
+
+
+#* Now I have exact FIPS for every county that I can use to match with other dataset
+
+
+# Load the dplyr package
+library(dplyr)
+
+# Select specific columns
+zillow_data <- zillow_data %>% select("RegionName", "FIPS", "State", "Year", "home_value")
+
+home_toptier_data <- home_toptier_data %>% select("RegionName", "FIPS", "State", "Year", "home_value")
+
+library(lubridate)
+
+# Rename "Year" to "Date"
+zillow_data <- rename(zillow_data, Date = Year)
+
+# Convert "Year" to Date format
+zillow_data$Date <- as.Date(zillow_data$Date)
+
+# Extract Year, Month, and Day using lubridate functions
+zillow_data$Year <- year(zillow_data$Date)
+zillow_data$Month <- month(zillow_data$Date)
+zillow_data$Day <- day(zillow_data$Date)
+
+
+
+# Rename "Year" to "Date"
+home_toptier_data <- rename(home_toptier_data, Date = Year)
+
+# Convert "Year" to Date format
+home_toptier_data$Date <- as.Date(home_toptier_data$Date)
+
+# Extract Year, Month, and Day using lubridate functions
+home_toptier_data$Year <- year(home_toptier_data$Date)
+home_toptier_data$Month <- month(home_toptier_data$Date)
+home_toptier_data$Day <- day(home_toptier_data$Date)
+
+
+
+# Select specific columns
+ZILLOW_monthly <- zillow_data %>% select("RegionName", "FIPS", "State", "Date", "Year", "Month", "Day", "home_value")
+
+na_count <- sum(is.na(ZILLOW_monthly$home_value))
+
+
+# Select specific columns
+top_tier_monthly <- home_toptier_data %>% select("RegionName", "FIPS", "State", "Date", "Year", "Month", "Day", "home_value")
+
+na_count <- sum(is.na(top_tier_monthly$home_value))
+
+#Take averages for every year and find one home value for every year for every county
+
+
+
+# Group by Year and calculate the average HomeValue for each year
+ZILLOW_yearly <- ZILLOW_monthly %>%
+  group_by(Year, FIPS) %>%
+  summarize(RegionName = RegionName,
+            State = State,
+            Date = Date, 
+            Month = Month,
+            Day = Day,
+            Average_HomeValue = mean(home_value, na.rm = TRUE))
+
+
+# Group by Year and calculate the average HomeValue for each year
+home_toptier_data_yearly <- top_tier_monthly %>%
+  group_by(Year, FIPS) %>%
+  summarize(RegionName = RegionName,
+            State = State,
+            Date = Date, 
+            Month = Month,
+            Day = Day,
+            Average_HomeValue = mean(home_value, na.rm = TRUE))
+
+
+
+#need to compress into one obs per year
+ZILLOW_yearly <- ZILLOW_yearly %>% distinct(Average_HomeValue, Year, .keep_all = TRUE)
+
+
+home_toptier_data_yearly <- home_toptier_data_yearly %>% distinct(Average_HomeValue, Year, .keep_all = TRUE)
+
+
+ZILLOW_yearly$Average_HomeValue <- as.numeric(ZILLOW_yearly$Average_HomeValue)
+
+
+home_toptier_data_yearly$Average_HomeValue <- as.numeric(home_toptier_data_yearly$Average_HomeValue)
+
+# Count NA values in Average_HomeValue
+na_count <- sum(is.na(ZILLOW_yearly$Average_HomeValue))
+
+
+# Load the openxlsx package
+#install.packages("openxlsx")
+
+# Write the dataset to an Excel file
+
+#write.csv(ZILLOW_yearly2, "ZILLOW_yearly2.csv")
+
+#downloading mothly data and yearly
+
+write.csv(home_toptier_data_yearly, "home_toptier_data_yearly.csv")
+write.csv(top_tier_monthly, "top_tier_monthly.csv")
+
+```
+
+
+* Trying to add Florida damage daata into the Zillow Yearly2 Data
+
+Forida damage data only includes Florida Counties, that is because I have to download every state separately and add a FIPS column for all
+
+```{r}
+florida_2000_2023_hurrdata <- read_excel("florida_2000_2023_damagedata.xlsx")
+```
+
+```{r}
+#florida_2000_2023_hurrdata$DAMAGE_PROPERTY_NUM <- as.numeric(florida_2000_2023_hurrdata$DAMAGE_PROPERTY_NUM)
+
+
+#florida_2000_2023_hurrdata$DAMAGE_CROPS_NUM <- as.numeric(florida_2000_2023_hurrdata$DAMAGE_CROPS_NUM)
+
+
+# Create "Hurricane Year" and "Hurricane Month" columns
+florida_2000_2023_hurrdata$Hurricane_Year <- year(mdy(florida_2000_2023_hurrdata$BEGIN_DATE))
+
+
+florida_2000_2023_hurrdata$Hurricane_Month <- month(mdy(florida_2000_2023_hurrdata$BEGIN_DATE), label = TRUE, abbr = FALSE)
+
+# Rename "FIPS Code" to "FIPS"
+florida_2000_2023_hurrdata <- rename(florida_2000_2023_hurrdata, FIPS = "FIPS Code")
+
+```
+
+```{r}
+# Select specific columns
+florida_2000_2023_hurrdata <- florida_2000_2023_hurrdata %>% select("County Name", "FIPS", "BEGIN_DATE", "Hurricane_Year", "Hurricane_Month", "HURR NAME", "DEATHS_DIRECT", "INJURIES_DIRECT", "DAMAGE_PROPERTY_NUM", "DAMAGE_CROPS_NUM", "STATE_ABBR", "DEATHS_INDIRECT", "INJURIES_INDIRECT")
+```
+
+```{r}
+# Merge the datasets
+merged_data_florida <- merge(ZILLOW_yearly, florida_2000_2023_hurrdata, by.x = c("FIPS", "Year"), by.y = c("FIPS", "Hurricane_Year"), all.x = TRUE)
+
+
+merged_data_florida2 <- merged_data_florida %>%
+  group_by(FIPS, Year) %>%
+  reframe(
+    FIPS = first(FIPS),
+    Year = first(Year),
+    RegionName = first(RegionName),
+    State = first(State),
+    Date = first(Date),
+    Month = first(Month),
+    Day = first(Day),
+    Average_HomeValue = first(Average_HomeValue),
+    `HURR NAME` = first(`HURR NAME`),
+    DAMAGE_PROPERTY_NUM = sum(DAMAGE_PROPERTY_NUM),
+    DAMAGE_CROPS_NUM = sum(DAMAGE_CROPS_NUM),
+    DEATHS = sum(DEATHS_DIRECT + DEATHS_INDIRECT, na.rm = TRUE),
+    INJURIES = sum(INJURIES_DIRECT + INJURIES_INDIRECT, na.rm = TRUE)
+  )
+
+
+
+
+# Assuming your dataset is named 'df' and the column you want to format is 'numeric_column'
+merged_data_florida2$DAMAGE_PROPERTY_NUM <- format(merged_data_florida2$DAMAGE_PROPERTY_NUM, scientific = FALSE)
+
+merged_data_florida2$DAMAGE_CROPS_NUM <- format(merged_data_florida2$DAMAGE_CROPS_NUM, scientific = FALSE)
+```
+
+
+```{}
+Merge Demographic Data into Zillow Yearly 2 Data
+
+Start with NRI Table Counties Dataset (cumulative dataset for all years)
+```
+
+## Creating official dataset with all yearly variables (no hurr)
+
+```{r}
+NRI_Table_Counties <- read_excel("NRI_Table_Counties.xlsx")
+
+# Rename "STCOFIPS" to "FIPS"
+NRI_Table_Counties <- rename(NRI_Table_Counties, FIPS = STCOFIPS)
+
+# Assuming your datasets are named homevalue and cumulative_data
+Zillow_yearly_merged <- merge(ZILLOW_yearly, NRI_Table_Counties, by = "FIPS", all.x = TRUE)
+
+states_to_keep <- c("FL", "SC", "NC", "LA", "MS", "AL", "GA", "VA", "ME", "AR", "CT", "MD", "NY", "PA", "VT", "CA", "TX")
+
+# variables to exclude are OID_, STATE, STATEABBRV, STATEFIPS, COUNTY, COUNTYFIPS
+columns_to_exclude <- c("OID_", "STATE", "STATEABBRV", "STATEFIPS", "COUNTY", "COUNTYFIPS")
+
+# Create the merged dataset excluding the specified columns
+Zillow_yearly_merged <- Zillow_yearly_merged[, !(names(Zillow_yearly_merged) %in% columns_to_exclude)]
+
+
+# filter out all states that don't matter to me
+
+Zillow_yearly_merged <- Zillow_yearly_merged %>% 
+  filter(State %in% states_to_keep)
+```
+
+
+## add median income data and population data to Zillow early merged dataset
+
+
+```{r}
+
+# let's clean it up and merge it into our hurr FL data
+
+income_data <- read_csv("CAINC4__ALL_AREAS_1969_2022.csv")
+
+
+# 
+
+# Assuming your data frame is named df and the column is named FIPS
+income_data$FIPS <- gsub('"', '', income_data$FIPS)
+
+income_data$FIPS <- as.numeric(income_data$FIPS)
+
+
+
+# NOW NEED TO PIVOT LONGER TO HAVE PANEL DATA
+
+income_data <- income_data %>% 
+  pivot_longer(cols = "2000":"2022", names_to = "Year", values_to = "Value")
+
+# only interested in keeping personal income per capita as description / filtering out all else
+
+
+income_data_income <- income_data %>%
+  filter(Description == "Per capita personal income (dollars) 4/")
+
+income_data_income <- income_data_income %>% rename(Income = "Value")
+
+income_data_pop <- income_data %>%
+  filter(Description == "Population (persons) 3/")
+
+income_data_pop <- income_data_pop %>% rename(Population = "Value")
+
+# merge income data with pop data together by FIPS and Year
+
+income_data_final <- merge(income_data_income, income_data_pop, by = c("Year", "FIPS"), all.x = TRUE)
+
+
+income_data_final <- income_data_final %>% 
+  select("FIPS", "Year", "County.x", "Income", "Population")
+
+income_data_final <- income_data_final %>% 
+  rename(County = "County.x")
+
+
+income_data_final <- income_data_final %>%
+  separate(County, into = c("County", "State"), sep = ", ", remove = FALSE)
+
+income_data_final <- income_data_final %>%
+  filter(State %in% states_to_keep)
+
+
+income_data_final$Year <- as.numeric(income_data_final$Year)
+```
+
+
+# merge income_data_final with Zillow_yearly_merged to have a complete dataset with all vars but not hurr data
+
+```{r}
+full_data <- left_join(Zillow_yearly_merged, income_data_final, by = c("FIPS", "Year"))
+
+full_data <- full_data %>% 
+  select("FIPS":"County", "Income", "Population")
+
+full_data <- full_data %>% 
+  rename(State = "State.x")
+
+full_data <- full_data %>%
+  filter(State %in% states_to_keep)
+```
+
+# need to add unemployment still? LOOK INTO IT...
+
+
+# then after having a complete dataset with all variables, add hurricane data
+
+
+```{r}
+official_hurr_data <- read_excel("official_hurr_data.xlsx")
+
+
+official_hurr_data <- official_hurr_data %>% 
+  rename(Year = "Hurr_Year")
+
+official_hurr_data$Year <- as.numeric(official_hurr_data$Year)
+```
+
+### FULL DATASET WITH INCOME, POP, FEMA DATA, HURR DATA
+
+
+```{r}
+DATASET <- left_join(full_data, official_hurr_data, by = c("FIPS", "Year"))
+```
