@@ -1,0 +1,579 @@
+---
+title: "Hurr_data_cleaning"
+output: html_document
+date: "2024-01-28"
+---
+
+```{r}
+install.packages("tidyr")
+install.packages("tidyverse")
+install.packages("magrittr")
+library(dplyr)
+
+```
+
+```{r}
+library(readxl)
+georgia1 <- read_excel("georgia.xlsx")
+
+georgia1 <- georgia1 %>%
+  mutate(County_Name = gsub("COASTAL | KEYS|LOWER |UPPER |MIDDLE |ZONE", "", CZ_NAME_STR) %>%
+            gsub("/", "", .) %>%
+            gsub("\\(\\)", "", .))  # This line removes parentheses
+
+
+georgia1 <- georgia1 %>%
+  mutate(State = "Georgia")
+
+
+library(stringr)
+
+# Convert "County" column to title case
+georgia1$County_Name <- str_to_title(georgia1$County_Name)
+
+# Create "County" column by concatenating "County" and "State"
+georgia1$County <- paste0(trimws(georgia1$County_Name), ", ", trimws(georgia1$State))
+
+
+
+# Extract first two words and create "HURR_NAME" column
+georgia1$HURR_NAME <- word(georgia1$EPISODE_NARRATIVE, 1, 2)
+
+# Remove commas and other punctuation, but keep the space between words in "HURR_NAME" column
+georgia1$HURR_NAME <- gsub("[[:punct:]&&[^[:space:]]]", "", georgia1$HURR_NAME)
+
+# Remove commas from "HURR_NAME" column
+georgia1$HURR_NAME <- gsub(",", "", georgia1$HURR_NAME)
+
+
+# Create "Hurr_Year" column with last 4 digits of "BEGIN_DATE"
+georgia1$Hurr_Year <- substr(georgia1$BEGIN_DATE, nchar(georgia1$BEGIN_DATE) - 3, nchar(georgia1$BEGIN_DATE))
+
+# only select vars I am interested in
+georgia1 <- georgia1 %>% 
+  select("State", "STATE_ABBR", "County", "HURR_NAME", "Hurr_Year", "BEGIN_DATE", "DEATHS_DIRECT","DEATHS_INDIRECT", "INJURIES_DIRECT", "INJURIES_INDIRECT", "DAMAGE_PROPERTY_NUM", "DAMAGE_CROPS_NUM", "EVENT_NARRATIVE", "EPISODE_NARRATIVE")
+
+```
+
+
+
+```{r}
+arkansas1 <- read_excel("arkansas.xlsx")
+
+
+arkansas1 <- arkansas1 %>%
+  mutate(County_Name = gsub("COASTAL | KEYS|LOWER |UPPER |MIDDLE |ZONE", "", CZ_NAME_STR) %>%
+            gsub("/", "", .) %>%
+            gsub("\\(\\)", "", .))  # This line removes parentheses
+
+
+arkansas1 <- arkansas1 %>%
+  mutate(State = "Arkansas")
+
+
+library(stringr)
+
+# Convert "County" column to title case
+arkansas1$County_Name <- str_to_title(arkansas1$County_Name)
+
+# Create "County" column by concatenating "County" and "State"
+arkansas1$County <- paste0(trimws(arkansas1$County_Name), ", ", trimws(arkansas1$State))
+
+
+
+# Extract first two words and create "HURR_NAME" column
+arkansas1$HURR_NAME <- word(arkansas1$EPISODE_NARRATIVE, 1, 2)
+
+# Remove commas and other punctuation, but keep the space between words in "HURR_NAME" column
+arkansas1$HURR_NAME <- gsub("[[:punct:]&&[^[:space:]]]", "", arkansas1$HURR_NAME)
+
+# Remove commas from "HURR_NAME" column
+arkansas1$HURR_NAME <- gsub(",", "", arkansas1$HURR_NAME)
+
+
+# Create "Hurr_Year" column with last 4 digits of "BEGIN_DATE"
+arkansas1$Hurr_Year <- substr(arkansas1$BEGIN_DATE, nchar(arkansas1$BEGIN_DATE) - 3, nchar(arkansas1$BEGIN_DATE))
+
+# only select vars I am interested in
+arkansas1 <- arkansas1 %>% 
+  select("State", "STATE_ABBR", "County", "HURR_NAME", "Hurr_Year", "BEGIN_DATE", "DEATHS_DIRECT","DEATHS_INDIRECT", "INJURIES_DIRECT", "INJURIES_INDIRECT", "DAMAGE_PROPERTY_NUM", "DAMAGE_CROPS_NUM", "EVENT_NARRATIVE", "EPISODE_NARRATIVE")
+
+```
+
+
+```{r}
+louisiana1 <- read_excel("louisiana.xlsx")
+
+
+louisiana1 <- louisiana1 %>%
+  mutate(County_Name = gsub("COASTAL | KEYS|LOWER |UPPER |MIDDLE |ZONE", "", CZ_NAME_STR) %>%
+            gsub("/", "", .) %>%
+            gsub("\\(\\)", "", .))  # This line removes parentheses
+
+
+louisiana1 <- louisiana1 %>%
+  mutate(State = "Louisiana")
+
+
+library(stringr)
+
+# Convert "County" column to title case
+louisiana1$County_Name <- str_to_title(louisiana1$County_Name)
+
+# Create "County" column by concatenating "County" and "State"
+louisiana1$County <- paste0(trimws(louisiana1$County_Name), ", ", trimws(louisiana1$State))
+
+
+
+# Extract first two words and create "HURR_NAME" column
+louisiana1$HURR_NAME <- word(louisiana1$EPISODE_NARRATIVE, 1, 2)
+
+# Remove commas and other punctuation, but keep the space between words in "HURR_NAME" column
+louisiana1$HURR_NAME <- gsub("[[:punct:]&&[^[:space:]]]", "", louisiana1$HURR_NAME)
+
+# Remove commas from "HURR_NAME" column
+louisiana1$HURR_NAME <- gsub(",", "", louisiana1$HURR_NAME)
+
+
+# Create "Hurr_Year" column with last 4 digits of "BEGIN_DATE"
+louisiana1$Hurr_Year <- substr(louisiana1$BEGIN_DATE, nchar(louisiana1$BEGIN_DATE) - 3, nchar(louisiana1$BEGIN_DATE))
+
+# only select vars I am interested in
+louisiana1 <- louisiana1 %>% 
+  select("State", "STATE_ABBR", "County", "HURR_NAME", "Hurr_Year", "BEGIN_DATE", "DEATHS_DIRECT","DEATHS_INDIRECT", "INJURIES_DIRECT", "INJURIES_INDIRECT", "DAMAGE_PROPERTY_NUM", "DAMAGE_CROPS_NUM", "EVENT_NARRATIVE", "EPISODE_NARRATIVE")
+
+```
+
+
+```{r}
+mississippi1 <- read_excel("mississippi.xlsx")
+
+
+mississippi1 <- mississippi1 %>%
+  mutate(County_Name = gsub("COASTAL | KEYS|LOWER |UPPER |MIDDLE |ZONE", "", CZ_NAME_STR) %>%
+            gsub("/", "", .) %>%
+            gsub("\\(\\)", "", .))  # This line removes parentheses
+
+
+mississippi1 <- mississippi1 %>%
+  mutate(State = "Mississippi")
+
+
+library(stringr)
+
+# Convert "County" column to title case
+mississippi1$County_Name <- str_to_title(mississippi1$County_Name)
+
+# Create "County" column by concatenating "County" and "State"
+mississippi1$County <- paste0(trimws(mississippi1$County_Name), ", ", trimws(mississippi1$State))
+
+
+
+# Extract first two words and create "HURR_NAME" column
+mississippi1$HURR_NAME <- word(mississippi1$EPISODE_NARRATIVE, 1, 2)
+
+# Remove commas and other punctuation, but keep the space between words in "HURR_NAME" column
+mississippi1$HURR_NAME <- gsub("[[:punct:]&&[^[:space:]]]", "", mississippi1$HURR_NAME)
+
+# Remove commas from "HURR_NAME" column
+mississippi1$HURR_NAME <- gsub(",", "", mississippi1$HURR_NAME)
+
+
+# Create "Hurr_Year" column with last 4 digits of "BEGIN_DATE"
+mississippi1$Hurr_Year <- substr(mississippi1$BEGIN_DATE, nchar(mississippi1$BEGIN_DATE) - 3, nchar(mississippi1$BEGIN_DATE))
+
+# only select vars I am interested in
+mississippi1 <- mississippi1 %>% 
+  select("State", "STATE_ABBR", "County", "HURR_NAME", "Hurr_Year", "BEGIN_DATE", "DEATHS_DIRECT","DEATHS_INDIRECT", "INJURIES_DIRECT", "INJURIES_INDIRECT", "DAMAGE_PROPERTY_NUM", "DAMAGE_CROPS_NUM", "EVENT_NARRATIVE", "EPISODE_NARRATIVE")
+
+```
+
+```{r}
+north_carolina1 <- read_excel("north_carolina.xlsx")
+
+
+north_carolina1 <- north_carolina1 %>%
+  mutate(County_Name = gsub("COASTAL | KEYS|LOWER |UPPER |MIDDLE |ZONE", "", CZ_NAME_STR) %>%
+            gsub("/", "", .) %>%
+            gsub("\\(\\)", "", .))  # This line removes parentheses
+
+
+north_carolina1 <- north_carolina1 %>%
+  mutate(State = "North Carolina")
+
+
+library(stringr)
+
+# Convert "County" column to title case
+north_carolina1$County_Name <- str_to_title(north_carolina1$County_Name)
+
+# Create "County" column by concatenating "County" and "State"
+north_carolina1$County <- paste0(trimws(north_carolina1$County_Name), ", ", trimws(north_carolina1$State))
+
+
+
+# Extract first two words and create "HURR_NAME" column
+north_carolina1$HURR_NAME <- word(north_carolina1$EPISODE_NARRATIVE, 1, 2)
+
+# Remove commas and other punctuation, but keep the space between words in "HURR_NAME" column
+north_carolina1$HURR_NAME <- gsub("[[:punct:]&&[^[:space:]]]", "", north_carolina1$HURR_NAME)
+
+# Remove commas from "HURR_NAME" column
+north_carolina1$HURR_NAME <- gsub(",", "", north_carolina1$HURR_NAME)
+
+
+# Create "Hurr_Year" column with last 4 digits of "BEGIN_DATE"
+north_carolina1$Hurr_Year <- substr(north_carolina1$BEGIN_DATE, nchar(north_carolina1$BEGIN_DATE) - 3, nchar(north_carolina1$BEGIN_DATE))
+
+# only select vars I am interested in
+north_carolina1 <- north_carolina1 %>% 
+  select("State", "STATE_ABBR", "County", "HURR_NAME", "Hurr_Year", "BEGIN_DATE", "DEATHS_DIRECT","DEATHS_INDIRECT", "INJURIES_DIRECT", "INJURIES_INDIRECT", "DAMAGE_PROPERTY_NUM", "DAMAGE_CROPS_NUM", "EVENT_NARRATIVE", "EPISODE_NARRATIVE")
+
+```
+
+```{r}
+South_carolina1 <- read_excel("South_carolina.xlsx")
+
+
+South_carolina1 <- South_carolina1 %>%
+  mutate(County_Name = gsub("COASTAL | KEYS|LOWER |UPPER |MIDDLE |ZONE", "", CZ_NAME_STR) %>%
+            gsub("/", "", .) %>%
+            gsub("\\(\\)", "", .))  # This line removes parentheses
+
+
+South_carolina1 <- South_carolina1 %>%
+  mutate(State = "South Carolina")
+
+
+library(stringr)
+
+# Convert "County" column to title case
+South_carolina1$County_Name <- str_to_title(South_carolina1$County_Name)
+
+# Create "County" column by concatenating "County" and "State"
+South_carolina1$County <- paste0(trimws(South_carolina1$County_Name), ", ", trimws(South_carolina1$State))
+
+
+
+# Extract first two words and create "HURR_NAME" column
+South_carolina1$HURR_NAME <- word(South_carolina1$EPISODE_NARRATIVE, 1, 2)
+
+# Remove commas and other punctuation, but keep the space between words in "HURR_NAME" column
+South_carolina1$HURR_NAME <- gsub("[[:punct:]&&[^[:space:]]]", "", South_carolina1$HURR_NAME)
+
+# Remove commas from "HURR_NAME" column
+South_carolina1$HURR_NAME <- gsub(",", "", South_carolina1$HURR_NAME)
+
+
+# Create "Hurr_Year" column with last 4 digits of "BEGIN_DATE"
+South_carolina1$Hurr_Year <- substr(South_carolina1$BEGIN_DATE, nchar(South_carolina1$BEGIN_DATE) - 3, nchar(South_carolina1$BEGIN_DATE))
+
+# only select vars I am interested in
+South_carolina1 <- South_carolina1 %>% 
+  select("State", "STATE_ABBR", "County", "HURR_NAME", "Hurr_Year", "BEGIN_DATE", "DEATHS_DIRECT","DEATHS_INDIRECT", "INJURIES_DIRECT", "INJURIES_INDIRECT", "DAMAGE_PROPERTY_NUM", "DAMAGE_CROPS_NUM", "EVENT_NARRATIVE", "EPISODE_NARRATIVE")
+
+```
+
+
+```{r}
+texas1 <- read_excel("texas.xlsx")
+
+
+texas1 <- texas1 %>%
+  mutate(County_Name = gsub("COASTAL | KEYS|LOWER |UPPER |MIDDLE |ZONE", "", CZ_NAME_STR) %>%
+            gsub("/", "", .) %>%
+            gsub("\\(\\)", "", .))  # This line removes parentheses
+
+
+texas1 <- texas1 %>%
+  mutate(State = "Texas")
+
+
+library(stringr)
+
+# Convert "County" column to title case
+texas1$County_Name <- str_to_title(texas1$County_Name)
+
+# Create "County" column by concatenating "County" and "State"
+texas1$County <- paste0(trimws(texas1$County_Name), ", ", trimws(texas1$State))
+
+
+
+# Extract first two words and create "HURR_NAME" column
+texas1$HURR_NAME <- word(texas1$EPISODE_NARRATIVE, 1, 2)
+
+# Remove commas and other punctuation, but keep the space between words in "HURR_NAME" column
+texas1$HURR_NAME <- gsub("[[:punct:]&&[^[:space:]]]", "", texas1$HURR_NAME)
+
+# Remove commas from "HURR_NAME" column
+texas1$HURR_NAME <- gsub(",", "", texas1$HURR_NAME)
+
+
+# Create "Hurr_Year" column with last 4 digits of "BEGIN_DATE"
+texas1$Hurr_Year <- substr(texas1$BEGIN_DATE, nchar(texas1$BEGIN_DATE) - 3, nchar(texas1$BEGIN_DATE))
+
+# only select vars I am interested in
+texas1 <- texas1 %>% 
+  select("State", "STATE_ABBR", "County", "HURR_NAME", "Hurr_Year", "BEGIN_DATE", "DEATHS_DIRECT","DEATHS_INDIRECT", "INJURIES_DIRECT", "INJURIES_INDIRECT", "DAMAGE_PROPERTY_NUM", "DAMAGE_CROPS_NUM", "EVENT_NARRATIVE", "EPISODE_NARRATIVE")
+
+```
+
+```{r}
+virginia1 <- read_excel("virginia.xlsx")
+
+
+virginia1 <- virginia1 %>%
+  mutate(County_Name = gsub("COASTAL | KEYS|LOWER |UPPER |MIDDLE |ZONE", "", CZ_NAME_STR) %>%
+            gsub("/", "", .) %>%
+            gsub("\\(\\)", "", .))  # This line removes parentheses
+
+
+virginia1 <- virginia1 %>%
+  mutate(State = "Virginia")
+
+
+library(stringr)
+
+# Convert "County" column to title case
+virginia1$County_Name <- str_to_title(virginia1$County_Name)
+
+# Create "County" column by concatenating "County" and "State"
+virginia1$County <- paste0(trimws(virginia1$County_Name), ", ", trimws(virginia1$State))
+
+
+
+# Extract first two words and create "HURR_NAME" column
+virginia1$HURR_NAME <- word(virginia1$EPISODE_NARRATIVE, 1, 2)
+
+# Remove commas and other punctuation, but keep the space between words in "HURR_NAME" column
+virginia1$HURR_NAME <- gsub("[[:punct:]&&[^[:space:]]]", "", virginia1$HURR_NAME)
+
+# Remove commas from "HURR_NAME" column
+virginia1$HURR_NAME <- gsub(",", "", virginia1$HURR_NAME)
+
+
+# Create "Hurr_Year" column with last 4 digits of "BEGIN_DATE"
+virginia1$Hurr_Year <- substr(virginia1$BEGIN_DATE, nchar(virginia1$BEGIN_DATE) - 3, nchar(virginia1$BEGIN_DATE))
+
+# only select vars I am interested in
+virginia1 <- virginia1 %>% 
+  select("State", "STATE_ABBR", "County", "HURR_NAME", "Hurr_Year", "BEGIN_DATE", "DEATHS_DIRECT","DEATHS_INDIRECT", "INJURIES_DIRECT", "INJURIES_INDIRECT", "DAMAGE_PROPERTY_NUM", "DAMAGE_CROPS_NUM", "EVENT_NARRATIVE", "EPISODE_NARRATIVE")
+
+```
+
+```{r}
+alabama1 <- read_excel("alabama.xlsx")
+
+
+
+
+alabama1 <- alabama1 %>%
+  mutate(County_Name = gsub("COASTAL | KEYS|LOWER |UPPER |MIDDLE |ZONE", "", CZ_NAME_STR) %>%
+            gsub("/", "", .) %>%
+            gsub("\\(\\)", "", .))  # This line removes parentheses
+
+
+alabama1 <- alabama1 %>%
+  mutate(State = "Alabama")
+
+
+library(stringr)
+
+# Convert "County" column to title case
+alabama1$County_Name <- str_to_title(alabama1$County_Name)
+
+# Create "County" column by concatenating "County" and "State"
+alabama1$County <- paste0(trimws(alabama1$County_Name), ", ", trimws(alabama1$State))
+
+
+
+# Extract first two words and create "HURR_NAME" column
+alabama1$HURR_NAME <- word(alabama1$EPISODE_NARRATIVE, 1, 2)
+
+# Remove commas and other punctuation, but keep the space between words in "HURR_NAME" column
+alabama1$HURR_NAME <- gsub("[[:punct:]&&[^[:space:]]]", "", alabama1$HURR_NAME)
+
+# Remove commas from "HURR_NAME" column
+alabama1$HURR_NAME <- gsub(",", "", alabama1$HURR_NAME)
+
+
+# Create "Hurr_Year" column with last 4 digits of "BEGIN_DATE"
+alabama1$Hurr_Year <- substr(alabama1$BEGIN_DATE, nchar(alabama1$BEGIN_DATE) - 3, nchar(alabama1$BEGIN_DATE))
+
+# only select vars I am interested in
+alabama1 <- alabama1 %>% 
+  select("State", "STATE_ABBR", "County", "HURR_NAME", "Hurr_Year", "BEGIN_DATE", "DEATHS_DIRECT","DEATHS_INDIRECT", "INJURIES_DIRECT", "INJURIES_INDIRECT", "DAMAGE_PROPERTY_NUM", "DAMAGE_CROPS_NUM", "EVENT_NARRATIVE", "EPISODE_NARRATIVE")
+
+```
+
+```{r}
+florida1 <- read_excel("florida.xlsx")
+
+
+
+florida1 <- florida1 %>%
+  mutate(County_Name = gsub("COASTAL | KEYS|LOWER |UPPER |MIDDLE |ZONE", "", CZ_NAME_STR) %>%
+            gsub("/", "", .) %>%
+            gsub("\\(\\)", "", .))  # This line removes parentheses
+
+
+florida1 <- florida1 %>%
+  mutate(State = "Florida")
+
+
+library(stringr)
+
+# Convert "County" column to title case
+florida1$County_Name <- str_to_title(florida1$County_Name)
+
+# Create "County" column by concatenating "County" and "State"
+florida1$County <- paste0(trimws(florida1$County_Name), ", ", trimws(florida1$State))
+
+
+
+# Extract first two words and create "HURR_NAME" column
+florida1$HURR_NAME <- word(florida1$EPISODE_NARRATIVE, 1, 2)
+
+# Remove commas and other punctuation, but keep the space between words in "HURR_NAME" column
+florida1$HURR_NAME <- gsub("[[:punct:]&&[^[:space:]]]", "", florida1$HURR_NAME)
+
+# Remove commas from "HURR_NAME" column
+florida1$HURR_NAME <- gsub(",", "", florida1$HURR_NAME)
+
+
+# Create "Hurr_Year" column with last 4 digits of "BEGIN_DATE"
+florida1$Hurr_Year <- substr(florida1$BEGIN_DATE, nchar(florida1$BEGIN_DATE) - 3, nchar(florida1$BEGIN_DATE))
+
+# only select vars I am interested in
+florida1 <- florida1 %>% 
+  select("State", "STATE_ABBR", "County", "HURR_NAME", "Hurr_Year", "BEGIN_DATE", "DEATHS_DIRECT","DEATHS_INDIRECT", "INJURIES_DIRECT", "INJURIES_INDIRECT", "DAMAGE_PROPERTY_NUM", "DAMAGE_CROPS_NUM", "EVENT_NARRATIVE", "EPISODE_NARRATIVE")
+
+```
+
+
+
+## export to excel to clean up anything that was left behind
+
+```{r}
+install.packages("writexl")
+install.packages("openxlsx")
+
+library(writexl)
+
+write_xlsx(virginia1, "virginia1.xlsx")
+write_xlsx(arkansas1, "arkansas1.xlsx")
+write_xlsx(louisiana1, "louisiana1.xlsx")
+write_xlsx(mississippi1, "mississippi1.xlsx")
+write_xlsx(georgia1, "georgia1.xlsx")
+write_xlsx(north_carolina1, "north_carolina1.xlsx")
+write_xlsx(South_carolina1, "South_carolina1.xlsx")
+write_xlsx(texas1, "texas1.xlsx")
+write_xlsx(florida1, "florida1.xlsx")
+write_xlsx(alabama1, "alabama1.xlsx")
+
+```
+
+# cleaned up in excel any potential errors - now re-importing into here, and merging all of these together to have one single big hurricane dataset with all states
+
+```{r}
+virginia2 <- read_excel("virginia1.xlsx")
+arkansas2 <- read_excel("arkansas1.xlsx")
+louisiana2 <- read_excel("louisiana1.xlsx")
+mississippi2 <- read_excel("mississippi1.xlsx")
+georgia2 <- read_excel("georgia1.xlsx")
+north_carolina2 <- read_excel("north_carolina1.xlsx")
+South_carolina2 <- read_excel("South_carolina1.xlsx")
+texas2 <- read_excel("texas1.xlsx")
+Florida2 <- read_excel("florida1.xlsx")
+Alabama2 <- read_excel("alabama1.xlsx")
+```
+
+```{r}
+# Create a list of your datasets
+list_of_datasets <- list(virginia2, arkansas2, louisiana2, mississippi2, georgia2, north_carolina2, South_carolina2, texas2, Florida2, Alabama2)
+
+# Use bind_rows to stack the datasets vertically
+stacked_data <- bind_rows(list_of_datasets, .id = "State")
+```
+
+
+
+# still need to add a FIPS code column to all of them
+
+```{r}
+county_data <- read_excel("georef-united-states-of-america-county.xlsx")
+```
+
+```{r}
+# Left join
+joined_data <- merge(stacked_data, county_data, by = "County", all.x = TRUE)
+
+joined_data <- joined_data %>% 
+  select("County","Official Code County", "HURR_NAME", "Hurr_Year", "BEGIN_DATE", "DEATHS_DIRECT":"EPISODE_NARRATIVE", "Official Name State")
+
+
+joined_data <- joined_data %>% 
+  rename(State = "Official Name State",
+         FIPS = "Official Code County")
+```
+
+
+## exporting into excel to fix any issues with FIPS code merge
+
+```{r}
+write_xlsx(joined_data, "joined_data.xlsx")
+```
+
+
+## re-importing fixed datset (only fixed a few FIPS codes that didn't connect)
+
+
+```{r}
+joined_data <- read_excel("joined_data.xlsx")
+
+#Counting how many NAs in FIPS column
+na_count <- sum(is.na(joined_data$FIPS))
+na_count
+```
+
+
+# Need to group by Hurr Year and FIPS so that I don't have the same county getting hit in the same year
+
+```{r}
+
+joined_data$FIPS <- as.numeric(joined_data$FIPS)
+
+
+joined_data <- joined_data %>%
+  filter(!is.na(FIPS))
+
+```
+
+
+```{r}
+joined_data_1 <- joined_data %>%
+  group_by(FIPS, Hurr_Year) %>%
+  reframe(
+    FIPS = first(FIPS),
+    County = first(County),
+    Hurr_Year = first(Hurr_Year),
+    State = first(State),
+    BEGIN_DATE = first(BEGIN_DATE),
+    HURR_NAME = first(HURR_NAME),
+    DAMAGE_PROPERTY_NUM = sum(DAMAGE_PROPERTY_NUM),
+    DAMAGE_CROPS_NUM = sum(DAMAGE_CROPS_NUM),
+    DEATHS = sum(DEATHS_DIRECT + DEATHS_INDIRECT, na.rm = TRUE),
+    INJURIES = sum(INJURIES_DIRECT + INJURIES_INDIRECT, na.rm = TRUE),
+    EVENT_NARRATIVE = first(EVENT_NARRATIVE),
+    EPISODE_NARRATIVE = first(EPISODE_NARRATIVE)
+  )
+```
+
+
+```{r}
+write_xlsx(joined_data_1, "joined_data_1.xlsx")
+```
+
+
+
+
