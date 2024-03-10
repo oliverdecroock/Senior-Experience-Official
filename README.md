@@ -1,13 +1,8 @@
 # Senior-Experience-Official
 
-For this research project, I used R Studio and Excel intermittently to double check results, and increase efficiency.
+For this research project, I used R Studio and Excel intermittently to double-check results, and increase efficiency.
 
-In order to reproduce this research, download the following three datasets:
-  DATASET2.xlsx
-  countyDistances.xlsx
-  stacked_data_test.xlsx
-  stacked_data_test (1).xlsx
-
+In order to reproduce this research, download the following three datasets: DATASET2.xlsx, countyDistances.xlsx, stacked_data_test.xlsx, stacked_data_test (1).xlsx
 
 Upload those datasets into your workspace, and run the code found in the "Official Data and Results".
 
