@@ -1,0 +1,329 @@
+Used R-Studio to clean initial datasets and create regression plots
+---
+title: "ADV-Econ Project - Oliver De Croock" output: html_document
+date: "2022-10-14"
+---
+```{r setup, include=FALSE} knitr::opts_chunk$set(echo = TRUE) ```
+```{r} library(readr) library(tidyverse) library(dplyr) library(stargazer) library(readxl) library("writexl") ```
+Downloading all datasets
+```{r setup, include=FALSE}
+county_home_values <- read_csv("County_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv") county_rent_values <- read_csv("County_zori_sm_month.csv")
+coastline_counties_list <- read_excel("coastline-counties-list.xlsx")
+us_disaster_declarations <- read_csv("us_disaster_declarations.csv")
+```
+Clean County Home data ```{r}
+county_home_values$FIPS <- paste(county_home_values$StateCodeFIPS, county_home_values$MunicipalCodeFIPS, sep = "")
+```
+```{r}
+county_home_values <- county_home_values %>% select(FIPS, everything()) ```
+```{r}
+county_home_values2 <- read_excel("file_show.xlsx")
+county_home_values2$FIPS2 <- as.numeric(county_home_values2$FIPS2) county_home_values$FIPS <- sprintf("%05d", as.numeric(county_home_values$FIPS))
+county_home_values3 <- select(county_home_values, FIPS, MunicipalCodeFIPS, RegionID, SizeRank, RegionName, RegionType, StateName, State, Metro, StateCodeFIPS)
+county_home_values7 <- select(county_home_values, !RegionID:MunicipalCodeFIPS)
+county_home_values6 <- county_home_values7 %>% pivot_longer(cols= !FIPS, names_to='Date',
+values_to='Value')
+```
+Merging county_home_values6 with county_home_values3
+```{r}
+home_data <- merge(county_home_values6, county_home_values3, by= "FIPS") ```
+```{r}
+home_data <- home_data %>%
+select("FIPS", "State","Date", "RegionName", "Value")
+
+```
+```{r}*
+home_data$Date <- format(as.Date(home_data$Date), "%Y/%m") ```
+Clean hurricanes data
+```{r}
+us_hurricanes_declarations <- filter(us_disaster_declarations, incident_type == "Hurricane") ```
+```{r}
+us_hurricanes_declarations <- us_hurricanes_declarations %>%
+filter(us_hurricanes_declarations$declaration_date >= as.POSIXct("2000-01-01")) ```
+```{r}
+us_hurricanes_declarations <- us_hurricanes_declarations %>%
+select("state", "declaration_type", "fips", "ih_program_declared", "ia_program_declared", "pa_program_declared", "hm_program_declared", "incident_begin_date", "incident_end_date", "declaration_title") %>%
+rename("FIPS" = "fips") ```
+```{r}
+us_hurricanes_declarations$days <- difftime(us_hurricanes_declarations$incident_begin_date, us_hurricanes_declarations$incident_end_date, units = c("days"))
+```
+```{r}
+us_hurricanes_declarations_official <- us_hurricanes_declarations %>%
+select("state", "declaration_type", "FIPS", "ih_program_declared","ia_program_declared", "pa_program_declared", "hm_program_declared", "incident_begin_date", "days", "declaration_title")
+
+```
+```{r}
+us_hurricanes_declarations_official$incident_begin_date <- format(as.Date(us_hurricanes_declarations_official$incident_begin_date), "%Y/%m") ```
+```{r}
+us_hurricanes_declarations_official <- us_hurricanes_declarations_official %>%
+rename("Date" = "incident_begin_date") ```
+```{r}
+home_data_00_05 <- home_data %>%
+filter(home_data$Date >= as.Date("2000-01-31") & home_data$Date <= as.Date("2005-12-31"))
+home_data_06_10 <- home_data %>%
+filter(home_data$Date >= as.Date("2006-01-31") & home_data$Date <= as.Date("2009-12-31"))
+home_data_11_15 <- home_data %>%
+filter(home_data$Date >= as.Date("2010-01-31") & home_data$Date <= as.Date("2015-12-31"))
+home_data_16_22 <- home_data %>%
+filter(home_data$Date >= as.Date("2016-01-31") & home_data$Date <= as.Date("2022-09-30"))
+```
+```{r}
+home_data_00_05$Date <- format(as.Date(home_data_00_05$Date), "%Y/%m") home_data_06_10$Date <- format(as.Date(home_data_06_10$Date), "%Y/%m") home_data_11_15$Date <- format(as.Date(home_data_11_15$Date), "%Y/%m") home_data_16_22$Date <- format(as.Date(home_data_16_22$Date), "%Y/%m") ```
+
+```{r}
+write.csv(home_data_00_05, file = "home_data_00_05.csv")
+write.csv(home_data_06_10, file = "home_data_06_10.csv")
+write.csv(home_data_11_15, file = "home_data_11_15.csv")
+write.csv(home_data_16_22, file = "home_data_16_22.csv") write.csv(us_hurricanes_declarations_official, file = "us_hurricanes_declarations_official.csv") ```
+```{r}
+us_hurricanes_declarations_official_0005 <- read_csv("us_hurricanes_declarations_official (2).csv") home_0610 <- read_csv("home_0610.csv")
+```
+```{r}
+home_data_00_05 <- read_csv("home_data_00_05.csv") HOME_DATA_06_10 <- read_csv("HOME_DATA_06_10.csv") HOME_DATA_11_15 <- read_csv("HOME_DATA_11_15.csv") HOME_DATA_16_22 <- read_csv("HOME_DATA_16_22.csv") ```
+```{r}
+home_data_00_05 <- home_data_00_05 %>%
+select("FIPS", "Date...4", "RegionName", "Value", "days", "declaration_title") %>%
+rename("Date" = "Date...4") ```
+```{r}
+HOME_DATA_06_10 <- HOME_DATA_06_10 %>%
+select("FIPS", "Date...4", "RegionName", "Value", "days", "declaration_title") %>%
+rename("Date" = "Date...4") ```
+
+```{r}
+HOME_DATA_11_15 <- HOME_DATA_11_15 %>%
+select("FIPS", "Date", "RegionName", "Value", "days", "declaration_title") ```
+```{r}
+HOME_DATA_16_22 <- HOME_DATA_16_22 %>%
+select("FIPS", "Date", "RegionName", "Value", "days", "declaration_title") ```
+```{r}
+hit1 <- ifelse(home_data_00_05$days == "#N/A", 0, 1) ```
+```{r}
+hit2 <- ifelse(HOME_DATA_06_10$days == "#N/A", 0, 1) ```
+```{r}
+hit3 <- ifelse(HOME_DATA_11_15$days == "#N/A", 0, 1) ```
+```{r}
+hit4 <- ifelse(HOME_DATA_16_22$days == "#N/A", 0, 1) ```
+```{r}
+home_data_00_05_updated <- home_data_00_05 %>% data.frame(FIPS= home_data_00_05$FIPS,
+date = home_data_00_05$Date, RegionName= home_data_00_05$RegionName,
+Value= home_data_00_05$Value,
+Days = home_data_00_05$days,
+declaration_title =home_data_00_05$declaration_title,
+
+```
+Hit = hit1)
+```{r}
+HOME_DATA_06_10_updated <- HOME_DATA_06_10 %>% data.frame(FIPS= HOME_DATA_06_10$FIPS,
+```
+date = HOME_DATA_06_10$Date, RegionName= HOME_DATA_06_10$RegionName,
+Value= HOME_DATA_06_10$Value,
+Days = HOME_DATA_06_10$days,
+declaration_title =HOME_DATA_06_10$declaration_title, Hit = hit2)
+```{r}
+HOME_DATA_11_15_updated <- HOME_DATA_11_15 %>% data.frame(FIPS= HOME_DATA_11_15$FIPS,
+```
+date = HOME_DATA_11_15$Date, RegionName= HOME_DATA_11_15$RegionName,
+Value= HOME_DATA_11_15$Value,
+Days = HOME_DATA_11_15$days,
+declaration_title =HOME_DATA_11_15$declaration_title, Hit = hit3)
+```{r}
+HOME_DATA_16_22_updated <- HOME_DATA_16_22 %>% data.frame(FIPS= HOME_DATA_16_22$FIPS,
+```
+date = HOME_DATA_16_22$Date, RegionName= HOME_DATA_16_22$RegionName,
+Value= HOME_DATA_16_22$Value,
+Days = HOME_DATA_16_22$days,
+declaration_title =HOME_DATA_16_22$declaration_title, Hit = hit4)
+
+```{r}
+home_data_00_05_updated <- home_data_00_05_updated %>%
+select("FIPS", "date", "RegionName", "Value", "Days", "declaration_title", "Hit") ```
+```{r}
+HOME_DATA_06_10_updated <- HOME_DATA_06_10_updated %>%
+select("FIPS", "date", "RegionName", "Value", "Days", "declaration_title", "Hit") ```
+```{r}
+HOME_DATA_11_15_updated <- HOME_DATA_11_15_updated %>%
+select("FIPS", "date", "RegionName", "Value", "Days", "declaration_title", "Hit") ```
+```{r}
+HOME_DATA_16_22_updated <- HOME_DATA_16_22_updated %>%
+select("FIPS", "date", "RegionName", "Value", "Days", "declaration_title", "Hit") ```
+```{r}
+dataset1 <- rbind(home_data_00_05_updated,HOME_DATA_06_10_updated) dataset2 <- rbind(HOME_DATA_11_15_updated,HOME_DATA_16_22_updated) official_data <- rbind(dataset1,dataset2)
+```
+```{r}
+official_data$Days <- ifelse(official_data$Days == "#N/A", "", official_data$Days) ```
+```{r}
+official_data$Days <- as.numeric(official_data$Days)
+
+```
+```{r}
+official_data %>%
+summarise_all(~sum(is.na(.))) ```
+```{r}
+write.csv(coastline_counties_list, file = "coastline_counties_list.csv") ```
+```{r}
+coastline_counties_list <- read_excel("coastline-counties-list.xlsx") ```
+```{r}
+coastline_counties_list$FIPS <- as.numeric(coastline_counties_list$FIPS) ```
+```{r}
+coastline_counties_list <- coastline_counties_list %>%
+rename(coastline_region = `COASTLINE REGION`) ```
+ADDING COASTLINE DATA - THEN CREATING DUMMY IF COUNTY IS ON COASTLINE
+```{r}
+official_data_coast <- official_data %>%
+left_join(coastline_counties_list, by = "FIPS") ```
+
+```{r}*
+coasting <- ifelse(official_data_coast$coastline_region == "", 0, 1) ```
+```{r}
+official_data_coast <- official_data_coast %>%
+mutate(coasting = case_when(official_data_coast$coastline_region != "" ~ 1, TRUE ~ 0)) ```
+```{r}
+official_data_coast <- official_data_coast %>%
+select("FIPS", "date", "RegionName", "Value", "declaration_title", "Hit", "coastline_region", "coasting") ```
+```{r}
+official_data_coast <- official_data_coast %>%
+rename(Hit_dummy = Hit, Coasting_dummy = coasting)
+```
+```{r}
+official_data_coast <- official_data_coast %>%
+select("FIPS", "date", "RegionName", "Value", "declaration_title", "coastline_region", "Hit_dummy", "Coasting_dummy")
+```
+```{r}
+official_data_coast$declaration_title[official_data_coast$declaration_title == '#N/A'] <- '' ```
+```{r} official_data_coast$coastline_region[is.na(official_data_coast$coastline_region)] <- '' ```
+
+```{r}
+library(psych) describe(official_data_coast) ```
+```{r} tibble(official_data_coast) ```
+Need to separate year and month
+```{r}
+official_data_coast2 <- official_data_coast %>%
+separate(official_data_coast, col = date, into = c("year", "month"), sep = '/', remove = FALSE) ```
+```{r}
+official_data_coast2 <- official_data_coast %>% separate(date, c('Year', 'Month'), sep = '/') ```
+```{r}
+write.csv(official_data_coast, file = "official_data_coast2.csv") ```
+```{r}
+official_data_coast2_2_ <- read_csv("official_data_coast2(2).csv") ```
+ADDING CONTROL VARIABLES Median income by county
+
+TRYING TO FIND FIPS CODES TO MATCH TWO DATASETS TOGETHER
+```{r}
+ZIP_COUNTY_FIPS_2017_06 <- read_csv("ZIP-COUNTY-FIPS_2017-06.csv") ```
+```{r}
+ZIP_COUNTY_FIPS_2017_06$county_name <- paste(ZIP_COUNTY_FIPS_2017_06$COUNTYNAME, ZIP_COUNTY_FIPS_2017_06$STATE, sep= " ")
+```
+MERGE EST11all with FIPS codes to have valid FIPS - DO THIS FOR ALL XCELS
+```{r}
+est11all <- read_excel("est11all.xls") ```
+```{r}
+est11all<- est11all %>%
+rename(county_fips = `County FIPS`,
+state_fips = `State FIPS`,
+poverty_estimate_all_ages = `Poverty Estimate All Ages`, median_income = `Median Household Income`)
+est11all <-est11all %>% filter(est11all$county_fips!=0)
+```
+```{r}
+est11all$county_name <- paste(est11all$Name, est11all$Postal, sep= " ")
+
+est11all <- est11all %>% left_join(ZIP_COUNTY_FIPS_2017_06, by = "county_name")
+est11all <- est11all %>%
+select("county_name","COUNTYNAME", "STATE", "STCOUNTYFP", "median_income",
+"poverty_estimate_all_ages", "Year" )
+est11all <- est11all %>% distinct(median_income, .keep_all = TRUE)
+est11all <- est11all %>% rename(FIPS = 'STCOUNTYFP')
+est11all$FIPS <- as.numeric(est11all$FIPS) ```
+YEAR 12
+```{r}
+est12all <- read_excel("est12all.xls") ```
+```{r}
+est12all<- est12all %>%
+rename(county_fips = `County FIPS Code`,
+state_fips = `State FIPS Code`,
+poverty_estimate_all_ages = `Poverty Estimate, All Ages`, median_income = `Median Household Income`)
+est12all <-est12all %>% filter(est12all$county_fips!="000")
+```
+```{r}
+est12all$county_name <- paste(est12all$Name, est12all$`Postal Code`, sep= " ")
+
+est12all <- est12all %>% left_join(ZIP_COUNTY_FIPS_2017_06, by = "county_name")
+est12all <- est12all %>%
+select("county_name","COUNTYNAME", "STATE", "STCOUNTYFP", "median_income",
+"poverty_estimate_all_ages", "Year" )
+est12all <- est12all %>% distinct(median_income, .keep_all = TRUE)
+est12all <- est12all %>% rename(FIPS = 'STCOUNTYFP')
+est12all$FIPS <- as.numeric(est12all$FIPS) ```
+```{r}
+median_income_datasets_10_20 <- rbind(est11all,est12all) ```
+MERGE EST11all3 to official_data_coast2_2
+```{r}
+official_data_coast_5 <- official_data_coast2_2_ %>%
+left_join(median_income_datasets_10_20, by = c('FIPS', 'Year')) ```
+```{r}
+official_data_coast_5 <- official_data_coast_5 %>%
+
+select("FIPS", "date","Year", "Month", "RegionName","county_name", "STATE", "Value","median_income", "poverty_estimate_all_ages", "declaration_title", "coastline_region", "Hit_dummy", "Coasting_dummy", "Hit_coasting_dummy")
+```
+trying to filter only 2010 and up... NO SUCCESS
+```{r}
+official_data_coast_10_20 <- official_data_coast_5 %>%
+filter(official_data_coast_5, 'Year' > 2010 ) ```
+```{r}
+official_data_coast_5$Year <- as.integer(official_data_coast_5$Year) ```
+```{r}
+official_data_coast_5$Year <- as.numeric(official_data_coast_5$Year)
+official_data_coast_5$FIPS <- as.character(official_data_coast_5$FIPS) ```
+CREATING TWO DATASETS
+- YEARLY DATA - all controls
+- MONHTLY DATA - no controls
+```{r}
+library(readr)
+dataset_econ_project3 <- read_csv("dataset-econ-project3.csv") ```
+```{r}
+
+dataset_econ_project3 <- dataset_econ_project3 %>% select(!c ("Value", "Date2", "Date", "Month"))
+```
+```{r}
+year_county_data <- dataset_econ_project3 %>% distinct(FIPS, Year, .keep_all=TRUE) ```
+```{r}
+year_state_data2 <- year_county_data %>%
+group_by(State, Year) %>% summarize(avg_medinc = mean(medinc),
+avg_pop = mean(pop),
+avg_poverty = mean(poverty), avg_Value = mean(avg_value), n_hits = sum(scaled_dummy), min_hurryear = min(hurryear), max_hurryear = max(hurryear), n_coasting = sum(coasting_dummy))
+```
+```{r}
+write.csv(year_state_data2, file = "year_state_data2.csv") ```
+```{r}
+year_county_data %>%
+summarise_all(~sum(is.na(.))) ```
+
+```{r}
+month_county_data <- dataset_econ_project3 %>%
+select(!c ("popupatltion", "poverty", "avg_value", "medinc", "pop")) ```
+```{r} library(readr)
+write.csv(month_county_data, file = "month_county_data.csv") write.csv(year_county_data, file = "year_county_data.csv")
+```
+```{r}
+plot(log(avg_value) ~ log(poverty), data = year_county_data) +
+theme_bw() ```
+```{r}
+month_county_data2 <- month_county_data %>%
+filter(State == c("South Carolina", "Louisiana", "Mississippi", "Alabama", "Georgia", "North Carolina", "Virginia", "Maine", "Arkansas", "Connecticut", "Maryland", "New York", "Pennsylvania", "Texas", "Vermont", "California")) summary(month_county_data)
+```
+```{r}
+year_county_data2 <- year_county_data %>%
+filter(State == c("South Carolina", "Louisiana", "Mississippi", "Alabama", "Georgia", "North Carolina", "Virginia", "Maine", "Arkansas", "Connecticut", "Maryland", "New York", "Pennsylvania", "Texas", "Vermont", "California", "Florida"))
+summary(year_county_data)
+```
+```{r}
+ggplot(data=year_county_data2, aes(y=log(avg_value),x=log(medinc))) + geom_point(shape=4) +
+
+geom_smooth(method='lm') +
+labs(title="Relationship between Log(Typical Home values) and Log(Median Income) ",y="Log (Typical Home Value)") +
+theme_classic() ```
+```{r}
+ggplot(data=year_county_data2, aes(y=log(avg_value),x=medinc)) +
+geom_point(shape=4) +
+geom_smooth(method='lm') +
+labs(title="Relationship between Log(Typical Home values) and Log(Median Income) ",y="Log (Typical Home Value)") +
+theme_classic() ```
